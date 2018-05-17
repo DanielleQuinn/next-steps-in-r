@@ -1,7 +1,5 @@
 ## Doing More With {dplyr}
 
-### Manipulating Data
-
 *Data Sets*
 
 - gapminder: standard data set used in lessons (`gapminder`)  
@@ -9,7 +7,9 @@
 - gapminder: number of car-related deaths per 100,000 (`gm_cars`)  
 - gapminder: population, broken down by age category (multiple data frames) (`gm_pop_xx`)  
 
-**Objective: reshape, manipulate, and merge these data sets**
+**Objective: reshape, manipulate, and merge these data sets, then produce a variety of summary statistics / simple models**
+
+### Manipulating Data
 
 - `gather()` and `merge()` to reshape `gm_cells` and `gm_cars`; review `spread()`  
 - `left_join()` to merge with `gapminder`; review other join functions  
