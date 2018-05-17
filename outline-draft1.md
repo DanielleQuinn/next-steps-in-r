@@ -20,9 +20,9 @@
 
 ### Exploring Data
 
-- identify errors (added to the data) to be converted to NA using `na_if()`  
+- identify errors (will be added to the data) to be converted to NA using `na_if()`  
 - `starts_with()` to `select()` population columns (start w/ `pop`)  
-- `contains()` to `select()` age-specific population columns (contain `pop_`) **need better example...**  
+- `contains()` to `select()` age-specific population columns (contain `pop_`) *need better example...*  
 - `everything()` to `select()` all columns following a specified column  
 - `grepl()` to use with `filter()`  
 
@@ -30,6 +30,6 @@
 
 - review of `summarize()`  
 - `count()` vs `n()` vs `tally()` vs `n_distinct()`; where and when each should be used most efficiently  
-- summarizing multiple columns using `summarize_at()' or `summarize_if()`  
+- summarizing multiple columns using `summarize_at()` or `summarize_if()`  
 - defining custom functions for use inside `summarize()`  
 - `do()` as a general purpose function
