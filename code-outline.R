@@ -53,13 +53,14 @@ gm <- gapminder %>%
 
 ## demonstrate transmute and mutate on cell_subscribers
 
-gm %>%
-    mutate(cell_subscribers_100k = cell_subscribers/1e5)
+gm <- gm %>%
+    mutate(cell_subscribers_pct = cell_subscribers / pop)
 
 gm %>%
-    transmute(cell_subscribers_100k = cell_subscribers/1e5)
+    transmute(cell_subscribers_pct = cell_subscribers / pop)
 
 ### exploring data
+
 
 
 ### Summarizing data
@@ -74,3 +75,67 @@ gm %>%
 gm %>%
     filter(year == 2002 | year == 2007) %>%
     count(continent, year)
+
+### number of cell phones through time
+
+gm %>%
+    filter(year > 1982) %>%
+    group_by(continent, country, year) %>%
+    summarize(cell_subscribers = sum(cell_subscribers_pct, na.rm = TRUE)) %>%
+    ggplot() +
+    geom_line(aes(x = year, y = cell_subscribers, colour = country)) +
+    facet_wrap(~ continent)
+
+## number of car deaths vs number of cell phone subscribers
+
+gm %>%
+    filter(year > 1980) %>%
+    group_by(continent, year) %>%
+    summarize(cell_subscribers = sum(cell_subscribers_pct, na.rm = TRUE),
+              car_deaths = sum(car_deaths, na.rm = TRUE)) %>%
+    ggplot(aes(x = cell_subscribers, y = car_deaths, size = year)) +
+    geom_point() +
+    facet_wrap(~ continent) +
+    scale_x_log10()
+
+## purrr: let's identify the countries for which the correlation between
+## cell phone adoption and car deaths are the most correlated
+
+## which year do we have data for?
+gm %>%
+    filter(!is.na(car_deaths)) %>%
+    count(year)
+
+gm %>%
+    filter(!is.na(cell_subscribers_pct) & cell_subscribers_pct > 0) %>%
+    count(year)
+
+
+not_na_not_zero <- function(x) {
+    all(x > 0 & !is.na(x))
+}
+
+cell_deaths_model <- function(df) {
+    lm(car_deaths ~ cell_subscribers_pct, df)
+}
+
+gm_nested <- gm %>%
+    filter(year > 1995) %>%
+    group_by(country) %>%
+    nest()
+
+gm_nested %>%
+    mutate(is_missing_cells = purrr::map_lgl(data, ~ all(.$cell_subscribers_pct > 0 & !is.na(.$cell_subscribers_pct))),
+           is_missing_car_deaths = purrr::map_lgl(data, ~ not_na_not_zero(.$car_deaths))) %>%
+    filter(is_missing_cells & is_missing_car_deaths) %>%
+    mutate(mdl = purrr::map(data, cell_deaths_model),
+           results = purrr::map(mdl, broom::glance)) %>%
+    unnest(results) %>%
+    arrange(desc(r.squared)) %>%
+    select(r.squared, statistic) %>%
+    filter(r.squared > .85) %>%
+    select(country, data) %>%
+    unnest() %>%
+    ggplot(aes(x = cell_subscribers_pct, y = car_deaths, color = country)) +
+    geom_point() +
+    facet_wrap(~ country)
