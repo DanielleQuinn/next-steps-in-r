@@ -7,3 +7,9 @@ In this workshop, we'll explore in more details how to use the tidyverse to expl
 ## Data
 
 [Download the data](http://daniellequinn.github.io/next-steps-in-r/data/gapminder-next-steps.zip)
+
+## Setup
+
+* Install the latest version of R
+* Install the latest versioon of RStudio
+* Install the tidyverse and gapminder datasets: `install.packages(c("tidyverse", "gapminder"))`.
