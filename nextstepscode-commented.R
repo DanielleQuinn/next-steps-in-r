@@ -78,7 +78,7 @@ gm_car_deaths_tidy <- gm_car_deaths %>%
 # ---- Merge Data ----
 # Look at the first few rows of both gapminder and gm_cells
 head(gapminder)
-had(gm_cells)
+head(gm_cells)
 
 # We can see that we would like to add the cell phone information
 # to our gapminder data set, using `country` and `year` to match records
@@ -194,3 +194,60 @@ gapminder %>%
     geom_line(aes(x = year, y = cell_subscribers_pct, colour = country)) +
     facet_wrap(~ continent) +
     theme(legend.position = "none")
+
+
+# ---- Application ----
+# We want to plot the number of cell phone subscribers through time
+# for the 3 countries in each continent that have the highest rates
+# for the least we have data for.
+
+# First, let's find the top country for each continent and plot them.
+
+# Below, we group by continent, and use filter to keep only the
+# row with the highest value for the subscriber rate. We use
+# select() to only keep the columns "continent" and "country".
+max_countries <- gapminder %>%
+    group_by(continent) %>%
+    filter(cell_subscribers_pct == max(cell_subscribers_pct,
+                                       na.rm = TRUE)) %>%
+    select(continent, country)
+
+# If we want to draw the plot as above but just for the countries with
+# the highest rates of subscription, we need to subset the data for just
+# the countries we identified in `max_countries`. One way to do this is
+# through a semi-join (a type of filtering join that will only keep the 
+# values in the table indicated in the right hand side).
+gapminder %>%
+    semi_join(max_countries, by = c("continent", "country")) %>%
+    filter (year > 1977) %>%
+    ggplot() +
+    geom_line(aes(x = year, y = cell_subscribers_pct,
+                  colour = country)) +
+    facet_wrap(~ continent) +
+    theme(legend.position ="none")
+
+# If instead of getting the top country for each contient, we want the
+# top 3, there are 2 approaches. 
+# The first involves sorting the values in decreasing order, and keeping
+# only the first 3 rows.
+top_3_countries <- gapminder %>%
+    group_by(continent) %>%
+    arrange(desc(cell_subscribers_pct)) %>%
+    slice(1:3) %>%
+    select(continent, country)
+
+# Another approach is to use the top_n() function:
+top_3_countries <- gapminder %>%
+    group_by(continent) %>% 
+    top_n(3, cell_subscribers_pct) %>%
+    select(continent, country)
+
+# and we can re-use the code written above to generate the plot we wanted
+gapminder %>%
+  semi_join(top_3_countries, by = c("continent", "country")) %>%
+  filter (year > 1977) %>%
+  ggplot() +
+  geom_line(aes(x = year, y = cell_subscribers_pct,
+                colour = country)) +
+  facet_wrap(~ continent) +
+  theme(legend.position ="none")
