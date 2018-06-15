@@ -151,7 +151,7 @@ gm %>%
     group_by(continent, year) %>%
     summarize(cell_subscribers = sum(cell_subscribers_pct, na.rm = TRUE),
               car_deaths = sum(car_deaths, na.rm = TRUE)) %>%
-    ggplot(aes(x = cell_subscribers, y = car_deaths, size = year)) +
+    ggplot(aes(x = cell_subscribers, y = car_deaths, colour = as.factor(year))) +
     geom_point() +
     facet_wrap(~ continent) +
     scale_x_log10()
@@ -169,8 +169,10 @@ gm %>%
     count(year)
 
 
-not_na_not_zero <- function(x) {
-    all(x > 0 & !is.na(x))
+
+
+not_na <- function(x) {
+    all(!is.na(x))
 }
 
 cell_deaths_model <- function(df) {
@@ -181,7 +183,7 @@ res <- gm %>%
     filter(year > 1995) %>%
     group_by(country) %>%
     nest() %>%
-    mutate(is_missing_cells = purrr::map_lgl(data, ~ all(.$cell_subscribers_pct > 0 & !is.na(.$cell_subscribers_pct))),
+    mutate(is_missing_cells = purrr::map_lgl(data, ~ all(!is.na(.$cell_subscribers_pct))),
            is_missing_car_deaths = purrr::map_lgl(data, ~ not_na_not_zero(.$car_deaths))) %>%
     filter(is_missing_cells & is_missing_car_deaths) %>%
     mutate(mdl = purrr::map(data, cell_deaths_model),
